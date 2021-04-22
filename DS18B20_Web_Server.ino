@@ -1,6 +1,9 @@
 /*********
   Rui Santos
   Complete project details at https://RandomNerdTutorials.com/home-automation-using-esp8266/
+  Credits : Ruis and Sara Santos
+    DS18B20 Digital Temperature Sensor
+    DS18B20 Temperature Sensor Web Server
 *********/
 
 // Including the ESP8266 WiFi library
