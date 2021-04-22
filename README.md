@@ -1,5 +1,5 @@
 # DS18B20_Web_Server
-Fan control with ESP-12E NodeMCU board
+Fan control with ESP-12E NodeMCU board, updatable parameters by web server.
 
 ## Description
 This code was written to control the temperature under an induction hob. A basic web server is used to adjust control parameters.
