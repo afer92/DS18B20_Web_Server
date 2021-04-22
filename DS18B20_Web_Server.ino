@@ -1,9 +1,13 @@
 /*********
   Rui Santos
   Complete project details at https://RandomNerdTutorials.com/home-automation-using-esp8266/
-  Credits : Ruis and Sara Santos
-    DS18B20 Digital Temperature Sensor
-    DS18B20 Temperature Sensor Web Server
+  Credits :
+    Ruis and Sara Santos
+      DS18B20 Digital Temperature Sensor
+      DS18B20 Temperature Sensor Web Server
+    Mariuste
+      Temperature Controlled 4-Pin PWM-Fan with Arduino Nano
+      https://github.com/mariuste/Fan_Temp_Control
 *********/
 
 // Including the ESP8266 WiFi library
