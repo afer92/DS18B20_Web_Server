@@ -38,3 +38,5 @@ To set parameters:
 ```
 http://module_IP/templow=22&temphigh=27&minduty=20&maxduty=100&&hyster=2
 ```
+
+## Schema
