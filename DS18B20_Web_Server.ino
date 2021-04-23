@@ -43,6 +43,8 @@ float hyteresis = 2;
 int minDuty = 50;
 int maxDuty = 100;
 
+String newHostname = "FanPlaque";
+
 // Data wire is plugged into pin D1 on the ESP8266 12-E - GPIO 5
 #define ONE_WIRE_BUS 5
 
@@ -176,6 +178,23 @@ void tempToPwmDuty() {
   setPwmDuty();
 }
 
+void initWiFi() {
+  analogWrite(ledPin, 100);
+  WiFi.mode(WIFI_STA);
+  WiFi.hostname(newHostname.c_str());
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi ..");
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print('.');
+    delay(1000);
+  }
+  analogWrite(ledPin, 20);
+  Serial.println(WiFi.localIP());
+  //The ESP8266 tries to reconnect automatically when the connection is lost
+  WiFi.setAutoReconnect(true);
+  WiFi.persistent(true);
+}
+
 // only runs once on boot
 void setup() {
   // Initializing serial port for debugging purposes
@@ -249,18 +268,7 @@ void setup() {
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
-  analogWrite(ledPin, 100);
-
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  
-  analogWrite(ledPin, 20);
+  initWiFi();
 
   // Starting the web server
   server.begin();
