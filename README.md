@@ -40,3 +40,4 @@ http://module_IP/templow=22&temphigh=27&minduty=20&maxduty=100&&hyster=2
 ```
 
 ## Schema
+![](https://github.com/afer92/DS18B20_Web_Server/blob/main/images/Schema.jpg?raw=true)
