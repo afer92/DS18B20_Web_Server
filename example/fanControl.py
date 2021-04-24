@@ -19,6 +19,8 @@ roomSensor = 844
 # Control parameters
 deltaTlow = 1  # tempLow = roomTemp + deltaTlow
 deltaThigh = 2  # (tempHigh - tempLow) >= deltaThigh
+minDuty2set = 20
+maxDuty2set = 100
 
 
 def getData(url):
@@ -165,8 +167,8 @@ def main():
             if newTemplow > tempHigh:
                 tempHigh = newTemplow + deltaThigh
 
-            url = u'http://{}:{}/templow={}&temphigh={}'.format(
-                fanIp, fanPort, newTemplow, tempHigh)
+            url = u'http://{}:{}/templow={}&temphigh={}&minduty={}&maxduty={}'.format(
+                fanIp, fanPort, newTemplow, tempHigh, minDuty2set, maxDuty2set)
             getData(url)
 
         # set domoticz sensors
