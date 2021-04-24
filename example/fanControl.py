@@ -5,9 +5,10 @@ import requests
 from time import sleep
 from datetime import datetime
 import json
+import math
 
 # Fan parameters
-fanIp = u'192.168.0.115'
+fanIp = u'192.168.0.109'
 fanPort = u'80'
 # Domoticz parameters
 domoIp = u'192.168.0.50'
@@ -49,14 +50,33 @@ def getData(url):
         return None
 
 
+def getDomoticz(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        content = response.content.decode(u'utf8')
+        return json.loads(content)[u'result']
+    else:
+        return None
+
+
 def getRoomTemp(url):
     """
     Get room temperature from Domoticz
     """
-    response = requests.get(url)
-    if response.status_code == 200:
-        content = response.content.decode(u'utf8')
-        return json.loads(content)[u'result'][0]
+    data = getDomoticz(url)
+    if data:
+        return data[0]
+    else:
+        return None
+
+
+def getTempHisto(url):
+    """
+    Get fan temperature history from Domoticz
+    """
+    data = getDomoticz(url)
+    if data:
+        return data[-1:][0]
     else:
         return None
 
@@ -82,9 +102,15 @@ def setsensors(data):
     # print(urlPercent)
 
 
+def truncate(number, digits) -> float:
+    stepper = 10.0 ** digits
+    return math.trunc(stepper * number) / stepper
+
+
 def main():
     nowTime = datetime.now()
     nowTimeStr = u'{}'.format(nowTime)[:19]
+    newTemplow = None
 
     # get room temperature
     url = u'http://{}:{}/json.htm?type=devices&rid={}'.format(
@@ -93,10 +119,42 @@ def main():
     if data:
         roomTemp = data[u'Temp']
         newTemplow = float(roomTemp) + deltaTlow
-        print(u'{} Room temp: {} New templow: {}'.format(
-            nowTimeStr, roomTemp, newTemplow))
     else:
         roomTemp = 0
+
+    # get fan temperature last day min
+    url = u'http://{}:{}/json.htm?type=graph&sensor=temp&idx={}&range=month'.format(
+        domoIp, domoPort, tempIdx)
+    data = getTempHisto(url)
+    tempMoyToday = None
+    if data:
+        tempHistoMin = data[u'tm']
+        url = u'http://{}:{}/json.htm?type=graph&sensor=temp&idx={}&range=day'.format(
+            domoIp, domoPort, tempIdx)
+        data = getDomoticz(url)
+        if data:
+            te = 0.0
+            for info in data:
+                te += info[u'te']
+            tempMoyToday = truncate(te / len(data), 2)
+    else:
+        tempHistoMin = 0
+
+    if tempHistoMin and roomTemp and tempMoyToday:
+        newTemplow = ((roomTemp + 3 * tempHistoMin +
+                      tempMoyToday) / 5) + deltaTlow
+    elif tempHistoMin and tempMoyToday:
+        newTemplow = ((3 * tempHistoMin + tempMoyToday) / 4) + deltaTlow
+    elif tempHistoMin:
+        newTemplow = float(tempHistoMin) + deltaTlow
+    elif tempMoyToday:
+        newTemplow = float(newTemplow) + deltaTlow
+
+    if newTemplow:
+        newTemplow = truncate(newTemplow, 2)
+
+    print(u'{} Room temp: {} tempHistoMin : {} tempMoyToday: {} New templow: {}'.format(
+        nowTimeStr, roomTemp, tempHistoMin, tempMoyToday, newTemplow))
 
     # get data fan
     url = u'http://{}:{}/'.format(fanIp, fanPort)
