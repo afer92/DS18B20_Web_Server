@@ -115,14 +115,14 @@ def main():
     newTemplow = None
 
     # get room temperature
-    url = u'http://{}:{}/json.htm?type=devices&rid={}'.format(
-        domoIp, domoPort, roomSensor)
-    data = getRoomTemp(url)
-    if data:
-        roomTemp = data[u'Temp']
-        newTemplow = float(roomTemp) + deltaTlow
-    else:
-        roomTemp = 0
+    roomTemp = 0
+    if roomSensor:
+        url = u'http://{}:{}/json.htm?type=devices&rid={}'.format(
+            domoIp, domoPort, roomSensor)
+        data = getRoomTemp(url)
+        if data:
+            roomTemp = data[u'Temp']
+            newTemplow = float(roomTemp) + deltaTlow
 
     # get fan temperature last day min
     url = u'http://{}:{}/json.htm?type=graph&sensor=temp&idx={}&range=month'.format(
