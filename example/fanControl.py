@@ -15,12 +15,14 @@ domoIp = u'192.168.0.50'
 domoPort = u'8080'
 tempIdx = 977
 fanIdx = 976
+fanRPM = 978
 roomSensor = 844
 # Control parameters
 deltaTlow = 1  # tempLow = roomTemp + deltaTlow
 deltaThigh = 2  # (tempHigh - tempLow) >= deltaThigh
 minDuty2set = 20
 maxDuty2set = 100
+hyster2set = 0.5
 
 
 def getData(url):
@@ -167,8 +169,8 @@ def main():
             if newTemplow > tempHigh:
                 tempHigh = newTemplow + deltaThigh
 
-            url = u'http://{}:{}/templow={}&temphigh={}&minduty={}&maxduty={}'.format(
-                fanIp, fanPort, newTemplow, tempHigh, minDuty2set, maxDuty2set)
+            url = u'http://{}:{}/templow={}&temphigh={}&minduty={}&maxduty={}&hyster={}'.format(
+                fanIp, fanPort, newTemplow, tempHigh, minDuty2set, maxDuty2set, hyster2set)
             getData(url)
 
         # set domoticz sensors
