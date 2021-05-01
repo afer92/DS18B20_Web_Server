@@ -44,7 +44,7 @@ dataDictDomo = {u'tempPlaques': tempPlaquesIdx,
                 u'tempCu': tempCuIdx,
                 u'tempNode': tempNodeIdx,
                 u'tempRoom': tempRoomIdx,
-            }
+                }
 
 #
 #  Node Mcu
@@ -310,6 +310,7 @@ def main():
 
     # Update sensors into domoticz
     updateDomo(data)
+
 
 if __name__ == '__main__':
     main()
