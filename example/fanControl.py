@@ -38,6 +38,14 @@ tempCuIdx = 979  # Temperature cuisine
 tempNodeIdx = 980  # Temperature controleur
 tempRoomIdx = 844  # Temperature autre piece
 
+dataDictDomo = {u'tempPlaques': tempPlaquesIdx,
+                u'fanDuty': fanDutyIdx,
+                u'fanRPM': fanRPMIdx,
+                u'tempCu': tempCuIdx,
+                u'tempNode': tempNodeIdx,
+                u'tempRoom': tempRoomIdx,
+            }
+
 #
 #  Node Mcu
 #
@@ -65,7 +73,8 @@ def getDataNode(url):
             return None
 
     data = {}
-    regTemp = re.compile('.*Temperature for device ([0-9]+) ([0-9a-fA-F]+): Temp C: ([0-9]+\.[0-9]+).*')
+    regTemp = re.compile(
+        '.*Temperature for device ([0-9]+) ([0-9a-fA-F]+): Temp C: ([0-9]+\.[0-9]+).*')
     # regTemp = re.compile('.*Temperature for device ([0-9]+) ([0-9a-fA-F]+).*')
     response = requests.get(url)
     if response.status_code == 200:
@@ -167,18 +176,11 @@ def getDataDomo(domoIp, domoPort):
     '''
     Get domoticz infos
     '''
-    dataDict = {u'tempPlaques': tempPlaquesIdx,
-                u'fanDuty': fanDutyIdx,
-                u'fanRPM': fanRPMIdx,
-                u'tempCu': tempCuIdx,
-                u'tempNode': tempNodeIdx,
-                u'tempRoom': tempRoomIdx,
-                }
     data = {}
 
     if domoIp:
         urlbase = u'http://{}:{}/json.htm?type=devices&rid={}'
-        for name, idx in dataDict.items():
+        for name, idx in dataDictDomo.items():
             if idx:
                 url = urlbase.format(domoIp, domoPort, idx)
                 value = getDomoticz(url)
@@ -218,6 +220,39 @@ def getDataDomo(domoIp, domoPort):
         return None
 
 
+def updateDomo(data):
+    """
+    Set infos in Domoticz for logging
+    """
+    if data:
+        # /json.htm?type=command&param=udevice&idx=IDX&nvalue=0&svalue=PERCENTAGE
+        # /json.htm?type=command&param=udevice&idx=IDX&nvalue=0&svalue=TEMP
+        urlBase = u'http://{}:{}/'.format(domoIp, domoPort)
+        for name, idx in dataDictDomo.items():
+            if name in (u'tempPlaques', u'tempCu', u'tempNode') and idx:
+                url = u'{}json.htm?type=command&param=udevice&idx={}&nvalue=0&svalue={}'
+                if name == u'tempPlaques':
+                    value = data['sensors'][tPlaques]['temp']
+                elif name == u'tempCu':
+                    value = data['sensors'][tCuisine]['temp']
+                elif name == u'tempNode':
+                    value = data['sensors'][tControl]['temp']
+                url = url.format(urlBase, idx, value)
+            elif name in (u'fanDuty', u'fanRPM') and idx:
+                url = u'{}json.htm?type=command&param=udevice&idx={}&nvalue=0&svalue={}'
+                if name == u'fanDuty':
+                    value = data['percentFan']
+                elif name == u'fanRPM':
+                    value = data['rpmFan']
+                url = url.format(urlBase, idx, value)
+            else:
+                url = None
+            if url:
+                response = requests.get(url)
+                if response.status_code != 200:
+                    print(url)
+                    print(response)
+
 #
 #  Utils
 #
@@ -230,6 +265,7 @@ def truncate(number, digits) -> float:
 #
 #  Main
 #
+
 
 def main():
     nowTime = datetime.now()
@@ -252,9 +288,9 @@ def main():
         if tControl in data[u'sensors'].keys():
             tempControl = float(data[u'sensors'][tControl][u'temp'])
         print(u'\r\nPlaques({}): {} °C Cuisine: {} °C Controleur: {} °C\r\n'.format(addressCtrl2set,
-                                                                        tempPlaques,
-                                                                        tempCuisine,
-                                                                        tempControl))
+                                                                                    tempPlaques,
+                                                                                    tempCuisine,
+                                                                                    tempControl))
     else:
         return
 
@@ -272,7 +308,9 @@ def main():
     else:
         print(nowTimeStr, 'set parameters error')
 
+    # Update sensors into domoticz
+    updateDomo(data)
+
 if __name__ == '__main__':
     main()
     exit(0)
-
